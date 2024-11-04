@@ -1,6 +1,6 @@
 import json
 import os
-
+from collections import deque
 
 def load_data(source_file):
     """Reading JSON from the file and deserializing it
@@ -69,4 +69,39 @@ class CityMap:
         :returns (obj)
         """
 
+        # 0. check if current node is goal? create new state with current stop and return State
+        # 1. remove current stop from not visited nodes
+        # 2. get neighboring stops of current stop
+        # 3. add current stop to visited stops
+        # 4. add neighbors to not visited nodes
+        # 5. set current stop to next not visited node
+
+        visited_node_codes = set()
+        nodes = deque([State(start, None)])
+
+        while nodes:
+            # queue.pop() pops from the right...
+            node = nodes.popleft()
+
+            if node.get_stop() == goal:
+                return node
+
+            if node.get_stop() not in visited_node_codes:
+                visited_node_codes.add(node.get_stop())
+
+                for neighbor_code in self.get_neighbors_codes(node.get_stop()):
+                    nodes.append(State(neighbor_code, node))
+
+        # No routes found
         return None
+
+if __name__ == "__main__":
+        citymap = CityMap("network.json")
+        results = str(citymap.search("1250429", "1121480"))
+        print(results)
+
+        print()
+
+        citymap = CityMap("network.json")
+        results = str(citymap.search("1010427", "1220425"))
+        print(results)

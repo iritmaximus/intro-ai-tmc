@@ -95,6 +95,20 @@ class CityMap:
         # No routes found
         return None
 
+    def heuristic(self, stop: State):
+        """
+        1. Implement a State class (the python TMC extension already has a template for this) with method 
+           heuristic(Stop s), which calculates a lower bound on the time required to reach the destination from stop s. 
+           A lower bound can be obtained by computing the distance between the two stops, and dividing it by the 
+           maximum speed of the tram which you can assume to be 260 coordinate points per minute.
+        2. Also implement method __lt__(self, other) in class State so that it can be used to order the nodes in 
+           the priotity queue based on cost + h(node) as described in Part 1. Here the nodes are states that are 
+           defined by the stop and the time since departure.
+        3. Implement the A* search in class CityMap. The PriorityQueue data structure comes in handy. 
+           An instance of the State class should be given as an argument to the search method.
+        """
+        return
+
 if __name__ == "__main__":
         citymap = CityMap("network.json")
         results = str(citymap.search("1250429", "1121480"))

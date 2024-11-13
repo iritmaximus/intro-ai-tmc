@@ -1,4 +1,4 @@
-from citymap import CityMap
+from citymap import CityMap, State
 
 
 def main():
@@ -21,6 +21,21 @@ def main():
 
     print(citymap.search(start, goal, departure_time))
 
+    FIRST_VAL = 11.9873
+    SECOND_VAL = 9.9933
+
+    metsolantie = citymap.get_stop('1250429')
+    urheilutalo = citymap.get_stop('1121480')
+    meilahdentie = citymap.get_stop("1150435");
+    caloniuksenkatu = citymap.get_stop("1130446");
+
+    State.goal = urheilutalo
+    state = State(metsolantie)
+    print(FIRST_VAL, state.heuristic())
+
+    State.goal = caloniuksenkatu
+    state = State(meilahdentie)
+    print(SECOND_VAL, state.heuristic())
 
 if __name__ == '__main__':
     main()

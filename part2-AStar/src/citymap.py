@@ -2,7 +2,9 @@ import json
 import os
 import queue as Q
 
-from math import sqrt
+import collections
+
+from math import sqrt, inf
 
 MAX_TRAM_SPEED = 260.0
 HUGE_NUMBER = 1000000
@@ -84,14 +86,21 @@ class State:
         :param other:
         :return: Boolean
         """
-        # Implement me
+
+        return (self.get_time() + self.heuristic()) < (other.get_time() + other.heuristic())
 
     def heuristic(self):
         """ Heuristic to evaluate lower bound on the time required to reach the destination from the stop
         Note: current goal stop is stored in State.goal
         :return: float
         """
-        # Implement me
+        current_x = self.get_stop().get("x")
+        current_y = self.get_stop().get("y")
+
+        goal_x = State.goal.get("x")
+        goal_y = State.goal.get("y")
+
+        return dist((current_x, current_y), (goal_x, goal_y))/MAX_TRAM_SPEED
 
 
 class CityMap:
@@ -160,9 +169,31 @@ class CityMap:
         # Specify goal for correct heuristic and comparator methods
         State.goal = goal
 
-        to_visit = Q.PriorityQueue()
-        to_visit.put(State(start, time_of_beginning))
+        nodes = Q.PriorityQueue()
+        visited_codes = set()
 
-        # Implement me
+        nodes.put(State(start, time_of_beginning))
+        # lowest_time_to_goal = inf
+        current_time = time_of_beginning
+
+        while not nodes.empty():
+            node = nodes.get()
+            current_time = node.get_time()
+
+            if node.get_stop_code() == State.goal.get("code"):
+                return node
+
+            if node.get_stop_code() in visited_codes:
+                continue
+            visited_codes.add(node.get_stop_code())
+
+            for neighbor_code in self.get_neighbors_codes(node.get_stop_code()):
+                time_to_neighbor = self.fastest_transition(node.get_stop_code(), neighbor_code, current_time)
+                total_time = current_time + time_to_neighbor
+
+                new_state = State(self.get_stop(neighbor_code), total_time, node)
+
+                nodes.put(new_state, new_state.heuristic())
+
 
         return None

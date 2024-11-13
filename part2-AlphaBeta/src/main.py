@@ -1,12 +1,31 @@
 from alphabeta import TicTacToe
 from alphabeta import alpha_beta_value
 
+from random import randint
 
-def play(state):
+
+def play(state, user_input=False):
     """Makes turn and prints the result of it until the game is over
     :param state: The initial state of the game (TicTacToe)
     """
-    # Implement me
+    i=0
+    while not state.is_end_state():
+        (c := "x") if state.crosses_turn else (c := "o")
+
+        if user_input:
+            print(state)
+            move_index = int(input(f"({c}) Enter a num from 1-9: ")) - 1
+        else:
+            print(state)
+            move_index = i
+            i += 1
+
+        state.move(move_index, c)
+        state.crosses_turn = not state.crosses_turn
+
+        state.generate_children()
+        print(alpha_beta_value(state))
+
 
 def main():
     """You need to implement the following functions/methods:
@@ -19,8 +38,7 @@ def main():
     """
     empty_board = 3 * '???'
     state = TicTacToe(empty_board, True)
-    print(state)
-    play(state)
+    play(state, False)
 
 
 if __name__ == '__main__':

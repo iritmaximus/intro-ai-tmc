@@ -60,12 +60,69 @@ class Perceptron:
         idata = get_images(images)
         cdata = get_chars(chars)
 
+        self.weights = [0 for _ in range(NUMBER_OF_PIXELS)]
         self.data = [{'vector': v, 'char': c} for (v, c) in zip(idata, cdata)]
         random.seed()
 
+    def errors_exist(self, weights, target_char, opposite_char, data):
+        for idx, image in enumerate(data):
+            z = 0
+            image_pixels = image["vector"]
+            image_char = image["char"]
+
+            for idx, pixel in enumerate(image_pixels):
+                z += pixel * weights[idx]
+
+            # print(z, image_char, target_char, opposite_char)
+
+            if z >= 0 and image_char == opposite_char:
+                # print(z, image_char, opposite_char)
+                return True
+            if z < 0 and image_char == target_char:
+                # print(z, image_char, target_char)
+                return True
+
+        return False
+
+
+
+
     def train(self, target_char, opposite_char, steps):
-        # Implement method
-        pass
+        weights = [0 for _ in range(NUMBER_OF_PIXELS)]
+        learning_rate = 1
+
+        data = [e for e in self.data if e['char'] in (target_char, opposite_char)]
+
+        i = 0
+        while self.errors_exist(weights, target_char, opposite_char, data) and steps > 0:
+            print(i, i/len(data)*100, end="\r")
+            z = 0
+
+            if i >= len(data): 
+                print(weights)
+                print("Loops left", steps)
+                steps -= 1
+                i = 0
+
+            image = data[i]["vector"]
+            image_char = data[i]["char"]
+
+            for idx, pixel in enumerate(image):
+                z += int(pixel) * weights[idx]
+
+            if z >= 0 and image_char == opposite_char:
+                for idx in range(NUMBER_OF_PIXELS):
+                    # weights[idx] -= image[idx] * learning_rate
+                    weights[idx] -= image[idx]
+            if z < 0 and image_char == target_char:
+                for idx in range(NUMBER_OF_PIXELS):
+                    # weights[idx] += image[idx] * learning_rate
+                    weights[idx] += image[idx]
+
+            i += 1
+
+        self.weights = weights
+        
 
     def test(self, target_char, opposite_char):
         """Tests the learned perceptron with the last 1000 x,y pairs.
@@ -85,6 +142,7 @@ class Perceptron:
             if (z >= 0 and e['char'] == target_char) or (z < 0 and e['char'] == opposite_char):
                 success += 1
 
+        print("success / len(examples)", success, "/", len(examples), "=", float(success) / len(examples))
         return float(success) / len(examples)
 
     def save_weights(self, filename):

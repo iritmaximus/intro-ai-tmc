@@ -54,120 +54,9 @@ def create_engine_class(evaluate_board, search_algorithm, student_name, student_
 
 
 """ 
-Base alpha-beta search algorithm
-Feel free to modify the depth parameter.
-"""
-def alpha_beta_search(board: chess.Board, evaluate_board) -> chess.Move:
-    """
-    Alpha-beta pruning algorithm, given a evaulate board. 
-    """
-    depth: int = 4
-    best_move = None
-    best_value = -float('inf') if board.turn == chess.WHITE else float('inf')
-
-    def alpha_beta(board, depth, alpha, beta, maximizing):
-        if depth == 0 or board.is_game_over():
-            return evaluate_board(board)
-        
-        if maximizing: # If we are maximizing, then it is whites turn, i.e., we are looking for best possible move as white
-            max_eval = -float('inf')
-            # Loop through all possible moves as white
-            for move in board.legal_moves:
-                # Make move
-                board.push(move)
-                # Recursively call alpha_beta
-                move_eval = alpha_beta(board, depth - 1, alpha, beta, False)
-                # Undo the move
-                board.pop()
-                max_eval = max(max_eval, move_eval)
-                alpha = max(alpha, move_eval) # update alpha value
-                if beta <= alpha: # Prune the tree
-                    break
-            return max_eval
-        else: # If we are minimizing, then it is blacks turn, i.e., we are looking for best possible move as black
-            min_eval = float('inf')
-            # Loop through all possible moves as black
-            for move in board.legal_moves:
-                board.push(move)
-                move_eval = alpha_beta(board, depth - 1, alpha, beta, True)
-                board.pop() # undo the move
-                min_eval = min(min_eval, move_eval)
-                beta = min(beta, move_eval)
-                if beta <= alpha:
-                    break
-            return min_eval
-
-    for move in board.legal_moves:
-        # make a move
-        board.push(move) 
-        # Check the value of the made move
-        move_value = alpha_beta(board, depth - 1, -float('inf'), float('inf'), not board.turn)
-        # undo the move
-        board.pop() 
-        
-        # Keep track of the best move
-        if board.turn == chess.WHITE:
-            if move_value > best_value:
-                best_value = move_value
-                best_move = move
-        else:
-            if move_value < best_value:
-                best_value = move_value
-                best_move = move
-    return best_move
-
-
-
-""" 
-Base Example evaluation function. 
-You could, for example, change the values of the pieces (piece_values dictionary) with different values 
-found in the linked wikipedia article. 
-"""
-def simple_board_eval(board: chess.Board) -> int:
-    """
-    Basic board evaluation function, which adds up the value of all the pieces on the board.
-    Returns a positive value if White is winning and a negative value if Black is winning.
-    Piece values from: https://en.wikipedia.org/wiki/Chess_piece_relative_value)
-    """
-    # If the game is over, return a very large value for checkmate or 0 for a draw
-    if board.is_checkmate():
-        # If it's Black's turn and Black is checkmated, White wins
-        if board.turn == chess.BLACK:
-            return 10000
-        # If it's White's turn and White is checkmated, Black wins
-        else:
-            return -10000
-    elif board.is_stalemate() or board.is_insufficient_material():
-        # If is its a draw, then nobody wins and is equal 
-        return 0
-
-    # Assign values to pieces
-    piece_values = {
-        chess.PAWN: 1,
-        chess.KNIGHT: 3,
-        chess.BISHOP: 3,
-        chess.ROOK: 5,
-        chess.QUEEN: 9,
-        chess.KING: 0
-    }
-
-    # Calculate the total value of pieces for both White and Black
-    value = 0
-    for piece_type in piece_values:
-        # Count the number of each type of piece for White and Black, and add or subtract accordingly
-        white_count = len(board.pieces(piece_type, chess.WHITE))
-        black_count = len(board.pieces(piece_type, chess.BLACK))
-        value += white_count * piece_values[piece_type]
-        value -= black_count * piece_values[piece_type]
-
-    return value
-
-
-""" 
 To test your evaluation or search function, you can use the play_game function against a search algorithm that picks a random move at each turn. 
 DO NOT MODIFY
 """
-
 import time
 import chess.pgn
 def play_game(engine1: ExampleEngine, engine2: ExampleEngine) -> tuple[chess.pgn.Game, str, dict[str, float]]:
@@ -192,6 +81,8 @@ def play_game(engine1: ExampleEngine, engine2: ExampleEngine) -> tuple[chess.pgn
         board.push(move)
         move_times_engine1.append(mveng1)
         move_times_engine2.append(mveng2)
+        print(board)
+        print()
     
     avg_mvtime_eng1 = sum(move_times_engine1) / len(move_times_engine1)
     avg_mvtime_eng2 = sum(move_times_engine2) / len(move_times_engine2)
@@ -205,6 +96,8 @@ def play_game(engine1: ExampleEngine, engine2: ExampleEngine) -> tuple[chess.pgn
 
 
 import random 
+from search import alpha_beta_search
+from eval import simple_board_eval, evaluate_board
 def random_search_algorithm(board: chess.Board, evaluate_board) -> chess.Move:
     return random.choice(list(board.legal_moves))
 
@@ -212,7 +105,8 @@ if __name__ == "__main__":
     # Here you can write your own and point to it as such
     my_search_algorithm = alpha_beta_search # NOTE: CHANGE THIS TO YOUR SEARCH ALGORITHM, IF YOU HAVE WRITEN ONE
     my_eval_function = simple_board_eval     # NOTE: CHANGE THIS TO YOUR EVALUATION FUNCTION, IF YOU HAVE WRITEN ONE
-    my_engine1 = create_engine_class(my_eval_function, my_search_algorithm, 'MyName', 123456)()
+    # my_engine1 = create_engine_class(my_eval_function, my_search_algorithm, 'MyName', 123456)()
+    my_engine1 = create_engine_class(evaluate_board, my_search_algorithm, 'MyName', 123456)()
 
     opponent_engine = create_engine_class(simple_board_eval, random_search_algorithm, 'OpponentName', 654321)()
 
